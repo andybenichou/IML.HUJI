@@ -9,3 +9,37 @@ __pycache__
 lab/.ipynb_checkpoints/
 code\ examples/.ipynb_checkpoints/
 
+.DS_Store
+code examples/Icon
+datasets/Icon
+exercises/Icon
+Icon
+IMLearn/.DS_Store
+IMLearn/base/Icon
+IMLearn/desent_methods/Icon
+IMLearn/Icon
+IMLearn/learners/.DS_Store
+IMLearn/learners/classifiers/Icon
+IMLearn/learners/Icon
+IMLearn/learners/regressors/Icon
+IMLearn/metrics/Icon
+IMLearn/utils/Icon
+lab/.DS_Store
+lab/Icon
+code examples/Icon
+datasets/Icon
+exercises/Icon
+Icon
+IMLearn/base/Icon
+IMLearn/desent_methods/Icon
+IMLearn/Icon
+IMLearn/learners/classifiers/Icon
+IMLearn/learners/Icon
+IMLearn/learners/regressors/Icon
+IMLearn/metrics/Icon
+IMLearn/utils/Icon
+code examples/Icon
+datasets/Icon
+exercises/Icon
+Icon
+IMLearn/base/Icon
