@@ -108,7 +108,7 @@ def question_5(data):
         losses.append(
             round(polynomial_model._loss(pred, df_country.Temp), 2))
 
-    px.bar(x=['South Africa','The Netherlands', 'Jordan'], y=losses,
+    px.bar(x=['South Africa', 'The Netherlands', 'Jordan'], y=losses,
            title="Loss for k=5 for each country",
            labels={"x": f"country", "y": "loss"}).show()
 
