@@ -115,6 +115,8 @@ class Perceptron(BaseEstimator):
 
             t += 1
 
+        self.fitted_ = True
+
     def _predict(self, X: np.ndarray) -> np.ndarray:
         """
         Predict responses for given samples using fitted estimator
@@ -132,8 +134,6 @@ class Perceptron(BaseEstimator):
         input_data = X.copy()
         if self.include_intercept_:
             input_data = np.hstack((np.ones((input_data.shape[0], 1)), X))
-
-        # np.inner or np.dot(input_data, self.coefs_)?
 
         return np.sign(np.inner(self.coefs_, input_data))
 

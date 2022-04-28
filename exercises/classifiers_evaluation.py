@@ -1,12 +1,11 @@
-from numpy import ndarray
-
 from IMLearn.learners.classifiers import Perceptron, LDA, GaussianNaiveBayes
-import numpy as np
 from typing import Tuple
+from utils import *
 import plotly.graph_objects as go
-import plotly.io as pio
 from plotly.subplots import make_subplots
-import plotly.express as px
+from math import atan2, pi
+
+from utils import decision_surface
 
 pio.templates.default = "simple_white"
 
@@ -64,10 +63,33 @@ def run_perceptron():
 
         # Plot figure
 
-        print(losses)
         px.line(x=list(range(1, len(losses) + 1)), y=losses,
                 title=n + " Losses during Fitting",
                 labels={"x": "iteration", "y": "loss"}).show()
+
+
+def get_ellipse(mu: np.ndarray, cov: np.ndarray):
+    """
+    Draw an ellipse centered at given location and according to specified covariance matrix
+    Parameters
+    ----------
+    mu : ndarray of shape (2,)
+        Center of ellipse
+    cov: ndarray of shape (2,2)
+        Covariance of Gaussian
+    Returns
+    -------
+        scatter: A plotly trace object of the ellipse
+    """
+    l1, l2 = tuple(np.linalg.eigvalsh(cov)[::-1])
+    theta = atan2(l1 - cov[0, 0], cov[0, 1]) if cov[0, 1] != 0 \
+        else (np.pi / 2 if cov[0, 0] < cov[1, 1] else 0)
+    t = np.linspace(0, 2 * pi, 100)
+    xs = (l1 * np.cos(theta) * np.cos(t)) - (l2 * np.sin(theta) * np.sin(t))
+    ys = (l1 * np.sin(theta) * np.cos(t)) + (l2 * np.cos(theta) * np.sin(t))
+
+    return go.Scatter(x=mu[0] + xs, y=mu[1] + ys, mode="lines",
+                      marker_color="black", showlegend=False)
 
 
 def compare_gaussian_classifiers():
@@ -76,18 +98,73 @@ def compare_gaussian_classifiers():
     """
     for f in ["gaussian1.npy", "gaussian2.npy"]:
         # Load dataset
-        raise NotImplementedError()
+        X, y = load_dataset("/Users/andybenichou/Documents/Études/"
+                            "Sciences Informatiques - HUJI/Année 3/"
+                            "Année 3 - Semestre 2/67577 - Introduction to "
+                            "Machine Learning/IML.HUJI/datasets/" + f)
 
         # Fit models and predict over training set
-        raise NotImplementedError()
 
         # Plot a figure with two suplots, showing the Gaussian Naive Bayes predictions on the left and LDA predictions
         # on the right. Plot title should specify dataset used and subplot titles should specify algorithm and accuracy
         from IMLearn.metrics import accuracy
-        raise NotImplementedError()
+
+        models = [LDA(), GaussianNaiveBayes()]
+        for m in models:
+            m._fit(X, y)
+
+        models_titles = [(models[0], "LDA"),
+                         (models[1], "Gaussian Naive Bayes")]
+
+        fig = make_subplots(rows=1, cols=2,
+                            subplot_titles=[f"{t} "
+                                            f"accuracy: "
+                                            f"{accuracy(y, m._predict(X))}"
+                                            for m, t in models_titles],
+                            horizontal_spacing=0.01, vertical_spacing=.03)
+
+        lims = np.array([X.min(axis=0), X.max(axis=0)]).T + np.array([-.4, .4])
+
+        symbols = np.array(["circle", "square", "star-triangle-up"])
+        colors = ["blue", "green", "red"]
+
+        for i, m in enumerate(models):
+            y_pred = m._predict(X)
+            fig.add_traces(
+                [decision_surface(m.predict, lims[0],
+                                  lims[1], showscale=False,
+                                  colorscale=colors),
+                 go.Scatter(x=X[:, 0], y=X[:, 1], mode="markers",
+                            showlegend=False,
+                            marker=dict(color=y_pred,
+                                        symbol=symbols[y.astype(int)],
+                                        colorscale=colors,
+                                        size=10,
+                                        line=dict(color="black", width=2))),
+                 go.Scatter(x=m.mu_[:, 0], y=m.mu_[:, 1], mode='markers',
+                            marker=dict(color="black", symbol="x", size=20),
+                            showlegend=False)],
+                rows=(i // 2) + 1,
+                cols=(i % 2) + 1)
+
+        fig.add_traces([get_ellipse(models[0].mu_[0], models[0].cov_),
+                        get_ellipse(models[0].mu_[1], models[0].cov_),
+                        get_ellipse(models[0].mu_[2], models[0].cov_)],
+                       rows=1,
+                       cols=1)
+
+        fig.add_traces([get_ellipse(models[1].mu_[0],
+                                    np.diag(models[1].vars_[0])),
+                        get_ellipse(models[1].mu_[1],
+                                    np.diag(models[1].vars_[1])),
+                        get_ellipse(models[1].mu_[2],
+                                    np.diag(models[1].vars_[2]))],
+                       rows=1,
+                       cols=2)
+        fig.show()
 
 
 if __name__ == '__main__':
-    np.random.seed(0)
-    run_perceptron()
-    # compare_gaussian_classifiers()
+    # np.random.seed(0)
+    # run_perceptron()
+    compare_gaussian_classifiers()
