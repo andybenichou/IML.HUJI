@@ -4,11 +4,9 @@ from utils import *
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 from math import atan2, pi
-
 from utils import decision_surface
 
 pio.templates.default = "simple_white"
-
 
 def load_dataset(filename: str) -> Tuple[np.ndarray, np.ndarray]:
     """
@@ -30,10 +28,8 @@ def load_dataset(filename: str) -> Tuple[np.ndarray, np.ndarray]:
 
     """
 
-    load_data = np.load(filename)
-    X, y = load_data[:, :2], load_data[:, 2]
-
-    return X, y
+    data = np.load(filename)
+    return data[:, :2], data[:, 2].astype(int)
 
 
 def run_perceptron():
@@ -60,7 +56,6 @@ def run_perceptron():
                                 lambda fit, x_i, y_i:
                                 losses.append(fit._loss(X, y)))
         perceptron._fit(X, y)
-
         # Plot figure
 
         px.line(x=list(range(1, len(losses) + 1)), y=losses,
@@ -71,25 +66,26 @@ def run_perceptron():
 def get_ellipse(mu: np.ndarray, cov: np.ndarray):
     """
     Draw an ellipse centered at given location and according to specified covariance matrix
+
     Parameters
     ----------
     mu : ndarray of shape (2,)
         Center of ellipse
+
     cov: ndarray of shape (2,2)
         Covariance of Gaussian
+
     Returns
     -------
         scatter: A plotly trace object of the ellipse
     """
     l1, l2 = tuple(np.linalg.eigvalsh(cov)[::-1])
-    theta = atan2(l1 - cov[0, 0], cov[0, 1]) if cov[0, 1] != 0 \
-        else (np.pi / 2 if cov[0, 0] < cov[1, 1] else 0)
+    theta = atan2(l1 - cov[0, 0], cov[0, 1]) if cov[0, 1] != 0 else (np.pi / 2 if cov[0, 0] < cov[1, 1] else 0)
     t = np.linspace(0, 2 * pi, 100)
     xs = (l1 * np.cos(theta) * np.cos(t)) - (l2 * np.sin(theta) * np.sin(t))
     ys = (l1 * np.sin(theta) * np.cos(t)) + (l2 * np.cos(theta) * np.sin(t))
 
-    return go.Scatter(x=mu[0] + xs, y=mu[1] + ys, mode="lines",
-                      marker_color="black", showlegend=False)
+    return go.Scatter(x=mu[0] + xs, y=mu[1] + ys, mode="lines", marker_color="black")
 
 
 def compare_gaussian_classifiers():
@@ -107,6 +103,7 @@ def compare_gaussian_classifiers():
 
         # Plot a figure with two suplots, showing the Gaussian Naive Bayes predictions on the left and LDA predictions
         # on the right. Plot title should specify dataset used and subplot titles should specify algorithm and accuracy
+        # Create subplots
         from IMLearn.metrics import accuracy
 
         models = [LDA(), GaussianNaiveBayes()]
@@ -131,6 +128,7 @@ def compare_gaussian_classifiers():
         for i, m in enumerate(models):
             y_pred = m._predict(X)
             fig.add_traces(
+                # Add traces for data-points setting symbols and colors
                 [decision_surface(m.predict, lims[0],
                                   lims[1], showscale=False,
                                   colorscale=colors),
@@ -141,11 +139,14 @@ def compare_gaussian_classifiers():
                                         colorscale=colors,
                                         size=10,
                                         line=dict(color="black", width=2))),
+                 # Add `X` dots specifying fitted Gaussians' means
                  go.Scatter(x=m.mu_[:, 0], y=m.mu_[:, 1], mode='markers',
                             marker=dict(color="black", symbol="x", size=20),
                             showlegend=False)],
                 rows=(i // 2) + 1,
                 cols=(i % 2) + 1)
+
+        # Add ellipses depicting the covariances of the fitted Gaussians
 
         fig.add_traces([get_ellipse(models[0].mu_[0], models[0].cov_),
                         get_ellipse(models[0].mu_[1], models[0].cov_),
