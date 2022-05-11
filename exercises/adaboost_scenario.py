@@ -68,7 +68,7 @@ def Question_1(train_X, train_y, test_X, test_y, n_learners, noise):
                        xaxis=dict(title="number of fitted learners",
                                   ticktext=x),
                        yaxis_title="errors rate")\
-        # .show()
+        .show()
 
     return adaboost, losses[:, 0], losses[:, 1]
 
@@ -95,7 +95,7 @@ def Question_2(train_X, test_X, test_y, noise, adaboost):
                        rows=(i // 2) + 1, cols=(i % 2) + 1)
 
     fig.update_layout(title=rf"Decision Boundaries with noise = {noise}")
-    # fig.show()
+    fig.show()
 
     return lims
 
@@ -120,11 +120,31 @@ def Question_3(test_X, test_y, noise, adaboost, test_loss, lims):
                             rf"with ensemble size = {min_loss_classifier} and "
                             rf"accuracy = {accuracy}")
 
-    # fig.show()
+    fig.show()
 
 
 def Question_4(train_X, train_y, noise, adaboost, lims):
-)
+    # Question 4: Decision surface with weighted samples
+
+    #TODO: size_factor * adaboost.D_ / np.max(adaboost.D_) ??
+
+    dec_surf = decision_surface(lambda x: adaboost._predict(x),
+                                *lims, showscale=False, dotted=False)
+
+    fact = 50 if noise == 0 else 15
+
+    fig = go.Figure([dec_surf, go.Scatter(x=train_X[:, 0], y=train_X[:, 1],
+                                          mode="markers", showlegend=False,
+                                          marker=dict(color=train_y,
+                                                      symbol=class_symbols[train_y.astype(int)],
+                                                      colorscale=[custom[0], custom[-1]],
+                                                      size=fact * adaboost.D_ / np.max(adaboost.D_),
+                                                      line=dict(width=0.5,
+                                                                color="black")
+                                                      ))])
+    fig.update_layout(title=rf"Weighted train decision boundaries with "
+                            rf"noise = {noise}")
+    fig.show()
 
 
 def fit_and_evaluate_adaboost(noise, n_learners=250, train_size=5000, test_size=500):
