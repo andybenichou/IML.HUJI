@@ -42,12 +42,12 @@ class DecisionStump(BaseEstimator):
             Responses of input data to fit to
         """
 
-        l_j_t_s = np.zeros(X.shape[1])
+        l_j_t_s = list()
 
         for sign, feature in product([-1, 1], range(X.shape[1])):
-            l_j_t_s[feature] = (feature,
-                                *self._find_threshold(X[:, feature], y, sign),
-                                sign)
+            l_j_t_s.append([feature,
+                            *self._find_threshold(X[:, feature], y, sign),
+                            sign])
 
         self.j_, self.threshold_, loss, self.sign_ = min(l_j_t_s,
                                                          key=lambda el: el[2])
@@ -112,14 +112,26 @@ class DecisionStump(BaseEstimator):
         values = values[indexes]
         labels = labels[indexes]
 
-        losses = list(np.sum(labels != sign))
+        label_signs = np.array([1 if label >= 0
+                                else -1
+                                for label in labels])
 
-        for label in labels:
-            losses.append(losses[-1] + 1
-                          if sign == label
-                          else losses[-1] - 1)
+        losses = [np.abs(labels[label_signs != sign]).sum()]
 
-        losses = np.array(losses) / len(labels)
+        for i, label in enumerate(labels[:-1]):
+            if label_signs[i] == sign:
+                losses.append(losses[-1] + label
+                              if label >= 0
+                              else
+                              losses[-1] - label)
+
+            else:
+                losses.append(losses[-1] - label
+                              if label >= 0
+                              else
+                              losses[-1] + label)
+
+        losses = np.array(losses)
 
         min_ind_loss = np.argmin(losses)
 
