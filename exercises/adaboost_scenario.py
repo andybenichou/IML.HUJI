@@ -67,7 +67,7 @@ def Question_1(train_X, train_y, test_X, test_y, n_learners, noise):
                              f"number of fitted learners with noise = {noise}",
                        xaxis=dict(title="number of fitted learners",
                                   ticktext=x),
-                       yaxis_title="errors rate")\
+                       yaxis_title="errors rate") \
         .show()
 
     return adaboost, losses[:, 0], losses[:, 1]
@@ -126,7 +126,7 @@ def Question_3(test_X, test_y, noise, adaboost, test_loss, lims):
 def Question_4(train_X, train_y, noise, adaboost, lims):
     # Question 4: Decision surface with weighted samples
 
-    #TODO: size_factor * adaboost.D_ / np.max(adaboost.D_) ??
+    #TODO: fact * adaboost.D_ / np.max(adaboost.D_) ??
 
     dec_surf = decision_surface(lambda x: adaboost._predict(x),
                                 *lims, showscale=False, dotted=False)
