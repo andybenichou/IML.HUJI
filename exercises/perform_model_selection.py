@@ -257,7 +257,8 @@ def question_8(lams, ridge_validation_scores, lasso_validation_scores,
                                y_train).fit(X_train,
                                             y_train).loss(X_test,
                                                           y_test)
-    print(f"Linear Regression loss : {linear_regression_loss}")
+
+    print(f"\n\nLinear Regression loss : {linear_regression_loss}")
 
 
 def select_regularization_parameter(n_samples: int = 50,
