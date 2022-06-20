@@ -34,10 +34,10 @@ def question_1(n_samples: int = 100, noise: float = 5):
                     mode="markers",
                     name="true",
                     marker=dict(color='LightSkyBlue',
-                                size=20,
+                                size=7,
                                 line=dict(
                                     color='mediumblue',
-                                    width=2
+                                    width=0.8
                                 ))),
 
          go.Scatter(x=X_train,
@@ -45,10 +45,10 @@ def question_1(n_samples: int = 100, noise: float = 5):
                     mode="markers",
                     name="train",
                     marker=dict(color='lightsalmon',
-                                size=20,
+                                size=7,
                                 line=dict(
                                     color='mediumvioletred',
-                                    width=2
+                                    width=0.8
                                 ))),
 
          go.Scatter(x=X_test,
@@ -56,10 +56,10 @@ def question_1(n_samples: int = 100, noise: float = 5):
                     mode="markers",
                     name="test",
                     marker=dict(color='lightseagreen',
-                                size=20,
+                                size=7,
                                 line=dict(
                                     color='forestgreen',
-                                    width=2
+                                    width=0.8
                                 ))),
          ],
         layout=go.Layout(
@@ -84,10 +84,10 @@ def question_2(X_train, y_train, n_samples: int = 100, noise: float = 5):
                     mode="lines+markers",
                     name="Train Scores",
                     marker=dict(color='LightSkyBlue',
-                                size=20,
+                                size=7,
                                 line=dict(
                                     color='mediumblue',
-                                    width=2
+                                    width=0.8
                                 ))),
 
          go.Scatter(x=Xs,
@@ -95,10 +95,10 @@ def question_2(X_train, y_train, n_samples: int = 100, noise: float = 5):
                     mode="lines+markers",
                     name="Validation Scores",
                     marker=dict(color='lightsalmon',
-                                size=20,
+                                size=7,
                                 line=dict(
                                     color='mediumvioletred',
-                                    width=2
+                                    width=0.8
                                 ))),
          ],
         layout=go.Layout(title=f"Train Scores and Validation Scores with "
