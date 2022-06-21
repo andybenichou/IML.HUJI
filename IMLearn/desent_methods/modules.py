@@ -34,8 +34,7 @@ class L2(BaseModule):
         output: ndarray of shape (1,)
             Value of function at point self.weights
         """
-        weight_norm = np.linalg.norm(self.weights, ord=2)
-        return weight_norm @ weight_norm
+        return np.square(np.linalg.norm(self.weights, ord=2))
 
     def compute_jacobian(self, **kwargs) -> np.ndarray:
         """

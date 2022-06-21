@@ -73,25 +73,121 @@ def get_gd_state_recorder_callback() -> Tuple[Callable[[], None], List[np.ndarra
     weights: List[np.ndarray]
         Recorded parameters
     """
-    raise NotImplementedError()
+    values = list()
+    weights_list = list()
+
+    def callback(solver: GradientDescent,
+                 weights: np.ndarray,
+                 val: np.ndarray,
+                 grad: np.ndarray,
+                 t: int,
+                 eta: float,
+                 delta: float):
+        weights_list.append(weights)
+        values.append(val)
+
+    return callback, values, weights_list
+
+
+def question_1_3(init, etas):
+    def get_module_plots(module_name):
+        for eta in etas:
+
+            module = L1(init) if module_name == 'L1' else L2(init)
+
+            callback, values, weights = get_gd_state_recorder_callback()
+
+            module.weights = GradientDescent(FixedLR(eta),
+                                             out_type="best",
+                                             callback=callback).fit(module,
+                                                                    None,
+                                                                    None)
+
+            plot_descent_path(L1 if module_name == 'L1' else L2,
+                              np.array(weights),
+                              f"{module_name} descent path with eta of {eta}"
+                              ).show()
+
+            go.Figure([go.Scatter(x=list(range(len(values))),
+                                  y=values,
+                                  mode='lines+markers')],
+                      layout=go.Layout(
+                          title=f"L2 norm with eta of {eta}",
+                          xaxis_title={"text": "Iterations"},
+                          yaxis_title={"text": "Values"})).show()
+
+    get_module_plots("L1")
+    get_module_plots("L2")
 
 
 def compare_fixed_learning_rates(init: np.ndarray = np.array([np.sqrt(2), np.e / 3]),
                                  etas: Tuple[float] = (1, .1, .01, .001)):
-    raise NotImplementedError()
+    return question_1_3(init, etas)
+
+
+def question_5(init, eta, gammas):
+    # Optimize the L1 objective using different decay-rate values of the exponentially decaying learning rate
+    traces = []
+
+    for gamma, colors in zip(gammas,
+                             [("LightSkyBlue", "mediumblue"),
+                              ("lightsalmon", "mediumvioletred"),
+                              ("lightseagreen", "forestgreen"),
+                              ("lightsteelblue", "darkblue")]):
+
+        callback, values, weights = get_gd_state_recorder_callback()
+
+        GradientDescent(learning_rate=ExponentialLR(base_lr=eta,
+                                                    decay_rate=gamma),
+                        out_type="best",
+                        callback=callback).fit(L1(init), None, None)
+
+        traces.append(go.Scatter(x=list(range(len(values))),
+                                 y=values,
+                                 mode='lines+markers',
+                                 name=f"With gamma of {gamma}",
+                                 marker=dict(color=colors[0],
+                                             size=0.3,
+                                             line=dict(
+                                                 color=colors[1],
+                                                 width=0.03
+                                             ))
+                                 )
+                      )
+
+    # Plot algorithm's convergence for the different values of gamma
+    go.Figure(traces,
+              layout=go.Layout(
+                  title=f"All decay rates convergence",
+                  xaxis_title={"text": "Iterations"},
+                  yaxis_title={"text": "Values"})).show()
+
+
+def question_7(init, eta):
+    for module_name in ['L1', 'L2']:
+        callback, values, weights = get_gd_state_recorder_callback()
+
+        GradientDescent(learning_rate=ExponentialLR(base_lr=eta,
+                                                    decay_rate=0.95),
+                        out_type="best",
+                        callback=callback).fit((L1
+                                                if module_name == 'L1'
+                                                else L2)(init),
+                                               None, None)
+
+        plot_descent_path(L1 if module_name == 'L1' else L2,
+                          np.array(weights),
+                          f"{module_name} descent path with gamma of 0.95"
+                          ).show()
 
 
 def compare_exponential_decay_rates(init: np.ndarray = np.array([np.sqrt(2), np.e / 3]),
                                     eta: float = .1,
                                     gammas: Tuple[float] = (.9, .95, .99, 1)):
-    # Optimize the L1 objective using different decay-rate values of the exponentially decaying learning rate
-    raise NotImplementedError()
-
-    # Plot algorithm's convergence for the different values of gamma
-    raise NotImplementedError()
+    question_5(init, eta, gammas)
 
     # Plot descent path for gamma=0.95
-    raise NotImplementedError()
+    question_7(init, eta)
 
 
 def load_data(path: str = "../datasets/SAheart.data", train_portion: float = .8) -> \
@@ -140,6 +236,6 @@ def fit_logistic_regression():
 
 if __name__ == '__main__':
     np.random.seed(0)
-    compare_fixed_learning_rates()
+    # compare_fixed_learning_rates()
     compare_exponential_decay_rates()
-    fit_logistic_regression()
+    # fit_logistic_regression()
