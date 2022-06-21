@@ -152,7 +152,7 @@ class LogisticModule(BaseModule):
         output: ndarray of shape (n_features,)
             Derivative of function with respect to self.weights at point self.weights
         """
-        return np.mean(np.dot(X.T, (1 / (1 + np.exp(-X @ self.weights))) - y))
+        return np.dot(X.T, (1 / (1 + np.exp(-X @ self.weights))) - y) / y.size
 
 
 class RegularizedModule(BaseModule):
