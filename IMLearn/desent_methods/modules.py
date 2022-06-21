@@ -1,5 +1,6 @@
 import numpy as np
 from IMLearn import BaseModule
+from copy import deepcopy
 
 
 class L2(BaseModule):
@@ -33,7 +34,8 @@ class L2(BaseModule):
         output: ndarray of shape (1,)
             Value of function at point self.weights
         """
-        raise NotImplementedError()
+        weight_norm = np.linalg.norm(self.weights, ord=2)
+        return weight_norm @ weight_norm
 
     def compute_jacobian(self, **kwargs) -> np.ndarray:
         """
@@ -49,7 +51,7 @@ class L2(BaseModule):
         output: ndarray of shape (n_in,)
             L2 derivative with respect to self.weights at point self.weights
         """
-        raise NotImplementedError()
+        return self.weights * 2
 
 
 class L1(BaseModule):
@@ -78,7 +80,7 @@ class L1(BaseModule):
         output: ndarray of shape (1,)
             Value of function at point self.weights
         """
-        raise NotImplementedError()
+        return np.linalg.norm(self.weights, ord=1)
 
     def compute_jacobian(self, **kwargs) -> np.ndarray:
         """
@@ -94,7 +96,7 @@ class L1(BaseModule):
         output: ndarray of shape (n_in,)
             L1 derivative with respect to self.weights at point self.weights
         """
-        raise NotImplementedError()
+        return np.sign(self.weights)
 
 
 class LogisticModule(BaseModule):
@@ -131,7 +133,8 @@ class LogisticModule(BaseModule):
         output: ndarray of shape (1,)
             Value of function at point self.weights
         """
-        raise NotImplementedError()
+        return -np.mean(y * np.dot(X, self.weights) -
+                        np.log(1 + np.exp(np.dot(X, self.weights))))
 
     def compute_jacobian(self, X: np.ndarray, y: np.ndarray, **kwargs) -> np.ndarray:
         """
@@ -150,7 +153,7 @@ class LogisticModule(BaseModule):
         output: ndarray of shape (n_features,)
             Derivative of function with respect to self.weights at point self.weights
         """
-        raise NotImplementedError()
+        return np.mean(np.dot(X.T, (1 / (1 + np.exp(-X @ self.weights))) - y))
 
 
 class RegularizedModule(BaseModule):
@@ -193,6 +196,15 @@ class RegularizedModule(BaseModule):
         if weights is not None:
             self.weights(weights)
 
+    def compute(self, intercept=False, **kwargs):
+        fidelity_o = self.fidelity_module_.compute_output(**kwargs)
+        regularization_o = self.regularization_module_.compute_output(**kwargs)
+
+        if intercept:
+            regularization_o = np.insert(regularization_o, 0, 0)
+
+        return fidelity_o + self.lam_ * regularization_o
+
     def compute_output(self, **kwargs) -> np.ndarray:
         """
         Compute the output value of the regularized objective function at point self.weights
@@ -207,7 +219,7 @@ class RegularizedModule(BaseModule):
         output: ndarray of shape (1,)
             Value of function at point self.weights
         """
-        raise NotImplementedError()
+        return self.compute()
 
     def compute_jacobian(self, **kwargs) -> np.ndarray:
         """
@@ -223,7 +235,7 @@ class RegularizedModule(BaseModule):
         output: ndarray of shape (n_in,)
             Derivative with respect to self.weights at point self.weights
         """
-        raise NotImplementedError()
+        return self.compute(intercept=self.include_intercept_)
 
     @property
     def weights(self):
@@ -234,7 +246,7 @@ class RegularizedModule(BaseModule):
         -------
         weights: ndarray of shape (n_in, n_out)
         """
-        raise NotImplementedError()
+        return self.weights
 
     @weights.setter
     def weights(self, weights: np.ndarray) -> None:
@@ -249,4 +261,9 @@ class RegularizedModule(BaseModule):
         weights: ndarray of shape (n_in, n_out)
             Weights to set for module
         """
-        raise NotImplementedError()
+        self.weights_ = deepcopy(weights)
+        self.fidelity_module_.weights = deepcopy(weights)
+        self.regularization_module_.weights = deepcopy(weights)
+
+        if self.include_intercept_:
+            self.regularization_module_.weights[0] = 0

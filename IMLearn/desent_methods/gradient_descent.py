@@ -119,4 +119,58 @@ class GradientDescent:
                 Euclidean norm of w^(t)-w^(t-1)
 
         """
-        raise NotImplementedError()
+
+        def get_output(initial_val, update_function, return_function):
+
+            for t in range(self.max_iter_):
+                rate = self.learning_rate_.lr_step(t=t)
+                jacobian = f.compute_jacobian(X=X, y=y)
+
+                norm = np.linalg.norm(-rate * jacobian)
+
+                if norm < self.tol_:
+                    break
+
+                f.weights = f.weights - rate * jacobian
+
+                self.callback_(self,
+                               weights=f.weights,
+                               val=f.compute_output(X=X, y=y),
+                               grad=f.compute_jacobian(X=X, y=y),
+                               t=t,
+                               eta=rate,
+                               delta=norm)
+
+                update_function(f.weights)
+
+            return return_function(initial_val)
+
+        if self.out_type_ == "best":
+            best = {"val": f.compute_output(X=X, y=y),
+                    "weight": f.weights}
+
+            def update_best(w):
+                output = f.compute_output(X=X, y=y)
+                if output < best["val"]:
+                    best["val"] = output
+                    best["weight"] = w
+
+            return get_output(best,
+                              update_best,
+                              lambda val: best["weight"])
+
+        if self.out_type_ == "last":
+            last = [f.weights]
+
+            def update_last(w):
+                last[-1] = w
+
+            return get_output(last,
+                              update_last,
+                              lambda val: last[-1])
+
+        if self.out_type_ == "average":
+            average = [f.weights]
+            return get_output(average,
+                              lambda w: average.append(w),
+                              lambda val: np.mean(val))
