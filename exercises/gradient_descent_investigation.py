@@ -114,7 +114,7 @@ def questions_1_3_4(init, etas):
 
             plot_descent_path(L1 if module_name == 'L1' else L2,
                               np.array(weights),
-                              f"{module_name} descent path with eta of {eta}"
+                              f"{module_name} with ETA of {eta}"
                               ).show()
 
             go.Figure([go.Scatter(x=list(range(len(values))),
@@ -292,45 +292,44 @@ def questions_8_9(X_train, y_train, X_test, y_test):
 
 
 def questions_10_11(X_train, y_train, X_test, y_test):
-    for module in ["l1", "l2"]:
-        question = 10
+    question = 10
+    for module_name in ["l1", "l2"]:
 
-    scores, losses = list(), list()
+        scores, losses = list(), list()
 
-    solver = GradientDescent(learning_rate=FixedLR(1e-4),
-                             max_iter=20000)
+        solver = GradientDescent(learning_rate=FixedLR(1e-4),
+                                 max_iter=20000)
 
-    module = LogisticRegression(penalty=module,
-                                solver=solver,
-                                alpha=0.5)
+        module = LogisticRegression(penalty=module_name,
+                                    solver=solver,
+                                    alpha=0.5)
 
-    for lam in LAMBDAS:
-        module.lam_ = lam
-        module._fit(X_train.to_numpy(), y_train.to_numpy())
+        for lam in LAMBDAS:
+            module.lam_ = lam
+            module._fit(X_train.to_numpy(), y_train.to_numpy())
 
-        scores.append(cross_validate(module,
-                                     X_train.to_numpy(),
-                                     y_train.to_numpy(),
-                                     misclassification_error)[1])
-        losses.append(module.loss(X_test.to_numpy(),
-                                  y_test.to_numpy()))
+            scores.append(cross_validate(module,
+                                         X_train.to_numpy(),
+                                         y_train.to_numpy(),
+                                         misclassification_error)[1])
+            losses.append(module.loss(X_test.to_numpy(),
+                                      y_test.to_numpy()))
 
-    print(f"Question {question} - {module} best lambda : "
-          f"{LAMBDAS[np.argmin(scores)]}, "
-          f"corresponding loss : {losses[np.argmin(scores)]}")
+        print(f"Question {question} - {module_name} best lambda : "
+              f"{LAMBDAS[np.argmin(scores)]}, "
+              f"corresponding loss : {losses[np.argmin(scores)]}")
 
-    question += 1
+        question += 1
 
 
 def fit_logistic_regression():
     # Load and split SA Heard Disease dataset
     X_train, y_train, X_test, y_test = load_data()
 
-    # questions_8_9(X_train, y_train, X_test, y_test)
+    questions_8_9(X_train, y_train, X_test, y_test)
 
     # Fitting l1- and l2-regularized logistic regression models,
     # using cross-validation to specify values of regularization parameter
-
     questions_10_11(X_train, y_train, X_test, y_test)
 
 
