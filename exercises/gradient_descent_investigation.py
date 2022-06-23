@@ -100,14 +100,15 @@ def get_gd_state_recorder_callback() -> Tuple[
 
 def questions_1_3_4(init, etas):
     def get_module_plots(module_name):
-        lowest_loss = [np.inf, np.inf]
+        lowest_loss = np.inf
+        e = 0.1
         for eta in etas:
             module = L1(init) if module_name == 'L1' else L2(init)
 
             callback, values, weights = get_gd_state_recorder_callback()
 
             module.weights = GradientDescent(FixedLR(eta),
-                                             out_type="best",
+                                             out_type="last",
                                              callback=callback).fit(module,
                                                                     None,
                                                                     None)
@@ -121,17 +122,16 @@ def questions_1_3_4(init, etas):
                                   y=values,
                                   mode='lines+markers')],
                       layout=go.Layout(
-                          title=f"L2 norm with eta of {eta}",
+                          title=f"{module_name} norm with eta of {eta}",
                           xaxis_title={"text": "Iterations"},
                           yaxis_title={"text": "Values"})).show()
 
-            if np.min(values) < lowest_loss[0]:
-                lowest_loss[0] = np.min(values)
+            if np.min(values) < lowest_loss:
+                print(module_name, eta, np.min(values))
+                lowest_loss = np.min(values)
+                e = eta
 
-            if module.compute_output() < lowest_loss[1]:
-                lowest_loss[1] = module.compute_output()
-
-        print(f"Question 4 - {module_name} lowest loss : {str(lowest_loss)}")
+        print(f"Question 4 - {module_name} lowest loss : {str(lowest_loss)} {e}")
 
     get_module_plots("L1")
     get_module_plots("L2")
@@ -157,7 +157,7 @@ def questions_5_6(init, eta, gammas):
 
         GradientDescent(learning_rate=ExponentialLR(base_lr=eta,
                                                     decay_rate=gamma),
-                        out_type="best",
+                        out_type="last",
                         callback=callback).fit(L1(init), None, None)
 
         traces.append(go.Scatter(x=list(range(len(values))),
@@ -192,7 +192,7 @@ def question_7(init, eta):
 
         GradientDescent(learning_rate=ExponentialLR(base_lr=eta,
                                                     decay_rate=0.95),
-                        out_type="best",
+                        out_type="last",
                         callback=callback).fit((L1
                                                 if module_name == 'L1'
                                                 else L2)(init),
@@ -326,7 +326,7 @@ def fit_logistic_regression():
     # Load and split SA Heard Disease dataset
     X_train, y_train, X_test, y_test = load_data()
 
-    questions_8_9(X_train, y_train, X_test, y_test)
+    # questions_8_9(X_train, y_train, X_test, y_test)
 
     # Fitting l1- and l2-regularized logistic regression models,
     # using cross-validation to specify values of regularization parameter
@@ -337,4 +337,4 @@ if __name__ == '__main__':
     np.random.seed(0)
     # compare_fixed_learning_rates()
     # compare_exponential_decay_rates()
-    fit_logistic_regression()
+    # fit_logistic_regression()
