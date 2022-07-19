@@ -158,7 +158,7 @@ def question_2(train_X, train_y, test_X, test_y, n_features, n_classes, lims):
 def question_3_or_4(mod, train_X, train_y, lims, question):
     vals, gradients, weights = list(), list(), list()
 
-    def cb(val, grad, w):
+    def cb(val, grad, w, **kwargs):
         vals.append(val)
         gradients.append(np.linalg.norm(grad))
         weights.append(w)

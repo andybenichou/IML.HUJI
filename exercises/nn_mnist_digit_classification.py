@@ -92,7 +92,7 @@ def plot_images_grid(images: np.ndarray, title: str = ""):
 def question_5_or_8(mod, train_X, train_y, test_X, test_y):
     vals, gradients = list(), list()
 
-    def cb(val, grad):
+    def cb(val, grad, **kwargs):
         vals.append(val)
         gradients.append(np.linalg.norm(grad))
 
@@ -114,7 +114,7 @@ def question_6(vals, grads):
     go.Figure(data=[go.Scatter(x=list(range(len(vals))),
                                y=vals,
                                mode='markers + lines',
-                               name="Vals"),
+                               name="Values"),
                     go.Scatter(x=list(range(len(grads))),
                                y=grads,
                                mode='markers + lines',
@@ -142,8 +142,60 @@ def question_9(network, test_X, test_y):
                      title="Least Confident").show()
 
 
-def question_10():
-    pass
+def question_10(train_X, train_y):
+    def cb(grad, val, **kwargs):
+        losses.append(val / len(val))
+        times.append(time.time() - start_time)
+
+    mod = [FullyConnectedLayer(input_dim=n_features,
+                               output_dim=64,
+                               activation=ReLU(),
+                               include_intercept=True),
+           FullyConnectedLayer(input_dim=64,
+                               output_dim=64,
+                               activation=ReLU(),
+                               include_intercept=True),
+           FullyConnectedLayer(input_dim=64,
+                               output_dim=n_classes,
+                               include_intercept=True)]
+
+    descents = [("Gradient Descent",
+                 GradientDescent(max_iter=10000,
+                                 learning_rate=FixedLR(1e-1),
+                                 tol=1e-10,
+                                 callback=cb)),
+                ("Stochastic Gradient Descent",
+                 StochasticGradientDescent(max_iter=10000,
+                                           learning_rate=FixedLR(1e-1),
+                                           tol=1e-10,
+                                           batch_size=64,
+                                           callback=cb))]
+    solvers_fig = go.Figure().update_layout(
+        title="Gradient Descent vs Stochastic Gradient Descent",
+        xaxis=dict(title="Running Time"),
+        yaxis=dict(title="Loss"))
+
+    for name, descent in descents:
+        losses, times = list(), list()
+        start_time = time.time()
+
+        network = NeuralNetwork(
+            modules=mod,
+            loss_fn=CrossEntropyLoss(),
+            solver=descent)
+        network.fit(train_X, train_y)
+
+        go.Figure([go.Scatter(x=times, y=losses)]) \
+            .update_layout(title="Running Time vs Loss",
+                           xaxis=dict(title="Running Time"),
+                           yaxis=dict(title="Loss")) \
+            .show()
+
+        solvers_fig.add_trace(go.Scatter(x=times,
+                                         y=losses,
+                                         name=name))
+
+    solvers_fig.show()
 
 
 if __name__ == '__main__':
@@ -192,4 +244,4 @@ if __name__ == '__main__':
     # ---------------------------------------------------------------------------------------------#
     # Question 10: GD vs GDS Running times                                                         #
     # ---------------------------------------------------------------------------------------------#
-    question_10()
+    question_10(train_X[:2500], train_y[:2500])
