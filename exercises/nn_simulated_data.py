@@ -156,10 +156,10 @@ def question_2(train_X, train_y, test_X, test_y, n_features, n_classes, lims):
 
 
 def question_3_or_4(mod, train_X, train_y, lims, question):
-    errors, gradients, weights = list(), list(), list()
+    vals, gradients, weights = list(), list(), list()
 
-    def cb(val, grad, w, **kwargs):
-        errors.append(val)
+    def cb(val, grad, w):
+        vals.append(val)
         gradients.append(np.linalg.norm(grad))
         weights.append(w)
 
@@ -170,8 +170,8 @@ def question_3_or_4(mod, train_X, train_y, lims, question):
                                                    callback=cb))
     network.fit(train_X, train_y)
 
-    go.Figure(data=[go.Scatter(x=list(range(len(errors))),
-                               y=errors,
+    go.Figure(data=[go.Scatter(x=list(range(len(vals))),
+                               y=vals,
                                mode='markers + lines',
                                name="Errors"),
                     go.Scatter(x=list(range(len(gradients))),

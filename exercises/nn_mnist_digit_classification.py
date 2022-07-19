@@ -4,9 +4,11 @@ import gzip
 from typing import Tuple
 
 from IMLearn.metrics.loss_functions import accuracy
-from IMLearn.learners.neural_networks.modules import FullyConnectedLayer, ReLU, CrossEntropyLoss, softmax
+from IMLearn.learners.neural_networks.modules import FullyConnectedLayer, ReLU, \
+    CrossEntropyLoss, softmax
 from IMLearn.learners.neural_networks.neural_network import NeuralNetwork
-from IMLearn.desent_methods import GradientDescent, StochasticGradientDescent, FixedLR
+from IMLearn.desent_methods import GradientDescent, StochasticGradientDescent, \
+    FixedLR
 from IMLearn.utils.utils import confusion_matrix
 
 import plotly.figure_factory as ff
@@ -14,6 +16,7 @@ from plotly.subplots import make_subplots
 import plotly.express as px
 import plotly.graph_objects as go
 import plotly.io as pio
+
 pio.templates.default = "simple_white"
 
 
@@ -74,13 +77,59 @@ def plot_images_grid(images: np.ndarray, title: str = ""):
     subset_images = images.reshape(-1, 28, 28)
 
     height, width = subset_images.shape[1:]
-    grid = subset_images.reshape(side, side, height, width).swapaxes(1, 2).reshape(height * side, width * side)
+    grid = subset_images.reshape(side, side, height, width).swapaxes(1,
+                                                                     2).reshape(
+        height * side, width * side)
 
-    return px.imshow(grid, color_continuous_scale="gray")\
-        .update_layout(title=dict(text=title, y=0.97, x=0.5, xanchor="center", yanchor="top"),
-                       font=dict(size=16), coloraxis_showscale=False)\
-        .update_xaxes(showticklabels=False)\
+    return px.imshow(grid, color_continuous_scale="gray") \
+        .update_layout(
+        title=dict(text=title, y=0.97, x=0.5, xanchor="center", yanchor="top"),
+        font=dict(size=16), coloraxis_showscale=False) \
+        .update_xaxes(showticklabels=False) \
         .update_yaxes(showticklabels=False)
+
+
+def question_5_or_8(mod, train_X, train_y, test_X, test_y):
+    vals, gradients = list(), list()
+
+    def cb(val, grad):
+        vals.append(val)
+        gradients.append(np.linalg.norm(grad))
+
+    network = NeuralNetwork(modules=mod,
+                            loss_fn=CrossEntropyLoss(),
+                            solver=StochasticGradientDescent(
+                                learning_rate=FixedLR(1e-1),
+                                max_iter=10000,
+                                batch_size=256,
+                                callback=cb))
+
+    network.fit(train_X, train_y)
+    print(f"Question 5 : {accuracy(test_y, network.predict(test_X))}")
+
+    return network, vals, gradients
+
+
+def question_6(vals, grads):
+    go.Figure(data=[go.Scatter(x=list(range(len(vals))),
+                               y=vals,
+                               mode='markers + lines',
+                               name="Vals"),
+                    go.Scatter(x=list(range(len(grads))),
+                               y=grads,
+                               mode='markers + lines',
+                               name="Gradients")],
+              layout=go.Layout(title="Convergence Process")).show()
+
+
+def question_7(network, test_X, test_y, n_classes):
+    go.Figure(data=[go.Heatmap(z=confusion_matrix(network.predict(test_X),
+                                                  test_y),
+                               x=list(range(n_classes)),
+                               y=list(range(n_classes)))],
+              layout=go.Layout(
+                  title="Test True vs Predicted Confusion Matrix"
+              )).show()
 
 
 if __name__ == '__main__':
@@ -91,18 +140,35 @@ if __name__ == '__main__':
     # Question 5+6+7: Network with ReLU activations using SGD + recording convergence              #
     # ---------------------------------------------------------------------------------------------#
     # Initialize, fit and test network
-    raise NotImplementedError()
+    mod = [FullyConnectedLayer(input_dim=n_features,
+                               output_dim=64,
+                               activation=ReLU(),
+                               include_intercept=True),
+           FullyConnectedLayer(input_dim=64,
+                               output_dim=64,
+                               activation=ReLU(),
+                               include_intercept=True),
+           FullyConnectedLayer(input_dim=64,
+                               output_dim=n_classes,
+                               include_intercept=True)]
+
+    network, vals, grads = question_5_or_8(mod, train_X, train_y,
+                                           test_X, test_y)
 
     # Plotting convergence process
-    raise NotImplementedError()
+    question_6(vals, grads)
 
     # Plotting test true- vs predicted confusion matrix
-    raise NotImplementedError()
+    question_7(network, test_X, test_y, n_classes)
 
     # ---------------------------------------------------------------------------------------------#
     # Question 8: Network without hidden layers using SGD                                          #
     # ---------------------------------------------------------------------------------------------#
-    raise NotImplementedError()
+    mod = [FullyConnectedLayer(input_dim=n_features,
+                               output_dim=n_classes,
+                               include_intercept=True)]
+
+    question_5_or_8(mod, train_X, train_y, test_X, test_y)
 
     # ---------------------------------------------------------------------------------------------#
     # Question 9: Most/Least confident predictions                                                 #
