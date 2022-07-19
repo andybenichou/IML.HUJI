@@ -96,5 +96,4 @@ def softmax(X: np.ndarray) -> np.ndarray:
     output: ndarray of shape (n_samples, n_features)
         Softmax(x) for every sample x in given data X
     """
-    # return np.exp(X) / np.sum(np.exp(X), axis=1, keepdims=True)
     return np.exp(X) / np.sum(np.exp(X), axis=1)
