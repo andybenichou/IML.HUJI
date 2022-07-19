@@ -58,10 +58,10 @@ def confusion_matrix(a: np.ndarray, b: np.ndarray) -> np.ndarray:
         while value `j` vas found in vector `b`
     """
 
-    confusion_matrix = list()
+    conf_matrix = list()
     for i in np.unique(a):
-        indexes = np.where(a == i)[0]
-        confusion_matrix.append([len(np.where(b[indexes] == j)[0])
-                                 for j in np.unique(b)])
+        indexes = a[a == i]
+        conf_matrix.append([len(b[b[indexes] == j])
+                            for j in np.unique(b)])
 
-    return confusion_matrix
+    return np.ndarray(conf_matrix)

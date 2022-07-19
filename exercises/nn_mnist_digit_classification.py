@@ -132,6 +132,20 @@ def question_7(network, test_X, test_y, n_classes):
               )).show()
 
 
+def question_9(network, test_X, test_y):
+    true_7 = test_X[test_y == 7]
+    pred = network.compute_prediction(true_7).argsort()
+
+    plot_images_grid(true_7[pred[-64:]],
+                     title="Most Confident").show()
+    plot_images_grid(true_7[pred[:64]],
+                     title="Least Confident").show()
+
+
+def question_10():
+    pass
+
+
 if __name__ == '__main__':
     train_X, train_y, test_X, test_y = load_mnist()
     (n_samples, n_features), n_classes = train_X.shape, 10
@@ -168,14 +182,14 @@ if __name__ == '__main__':
                                output_dim=n_classes,
                                include_intercept=True)]
 
-    question_5_or_8(mod, train_X, train_y, test_X, test_y)
+    network = question_5_or_8(mod, train_X, train_y, test_X, test_y)[0]
 
     # ---------------------------------------------------------------------------------------------#
     # Question 9: Most/Least confident predictions                                                 #
     # ---------------------------------------------------------------------------------------------#
-    raise NotImplementedError()
+    question_9(network, test_X, test_y)
 
     # ---------------------------------------------------------------------------------------------#
     # Question 10: GD vs GDS Running times                                                         #
     # ---------------------------------------------------------------------------------------------#
-    raise NotImplementedError()
+    question_10()
