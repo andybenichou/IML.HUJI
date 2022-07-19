@@ -159,7 +159,8 @@ class NeuralNetwork(BaseEstimator, BaseModule):
         Function depends on values calculated in forward pass and stored in
         `self.pre_activations_` and `self.post_activations_`
         """
-        post_act = self.post_activations_[-1]
+        post_act = self.compute_prediction(X=X)
+
         loss_jac = self.loss_fn_.compute_jacobian(X=post_act, y=y, **kwargs)
 
         res = list()
