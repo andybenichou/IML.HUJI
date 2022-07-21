@@ -238,7 +238,7 @@ if __name__ == '__main__':
                          xaxis=dict(title=r"$x_1$"),
                          yaxis=dict(title=r"$x_2$"),
                          width=400, height=400)) \
-        .write_image(f"../figures/nonlinear_data.png")
+        .show()
 
     # ---------------------------------------------------------------------------------------------#
     # Question 1: Fitting simple network with two hidden layers                                    #
@@ -248,9 +248,9 @@ if __name__ == '__main__':
     # ---------------------------------------------------------------------------------------------#
     # Question 2: Fitting a network with no hidden layers                                          #
     # ---------------------------------------------------------------------------------------------#
-    question_2(train_X, train_y, test_X, test_y, n_features, n_classes, lims)
-
-    # ---------------------------------------------------------------------------------------------#
-    # Question 3+4: Plotting network convergence process                                           #
-    # ---------------------------------------------------------------------------------------------#
-    questions_3_4(train_X, train_y, n_features, n_classes, lims)
+    # question_2(train_X, train_y, test_X, test_y, n_features, n_classes, lims)
+    #
+    # # ---------------------------------------------------------------------------------------------#
+    # # Question 3+4: Plotting network convergence process                                           #
+    # # ---------------------------------------------------------------------------------------------#
+    # questions_3_4(train_X, train_y, n_features, n_classes, lims)
